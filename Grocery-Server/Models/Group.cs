@@ -1,5 +1,5 @@
-using Microsoft.EntityFrameworkCore;
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.EntityFrameworkCore;
 
 namespace Grocery_Server.Models;
 
@@ -14,20 +14,24 @@ public class Group
 
     public DateTime CreationTime { get; set; }
 
-
     [AllowNull]
     public virtual User? Owner { get; set; }
 
     [AllowNull]
     public virtual ICollection<User> Members { get; set; }
+
     [AllowNull]
     public virtual ICollection<GroceryList>? GroceryLists { get; set; }
+
     [AllowNull]
     public virtual ICollection<GroceryCategory> CustomCategories { get; set; }
+
     [AllowNull]
     public virtual ICollection<GroupInvite> Invites { get; set; }
+
     [AllowNull]
     public virtual ICollection<Recipe> Recipes { get; set; }
+
     [AllowNull]
     public virtual ICollection<RequestListItem> RequestListItems { get; set; }
 
@@ -46,7 +50,6 @@ public class Group
 
     public string GetString()
     {
-        List<User> members = Members.ToList();
-        return $"Id: {Id}\nName: '{Name}'\nOwner Id: {OwnerId}\nMembers: {string.Join(",", members)}";
+        return $"Id: {Id}\nName: '{Name}'\nOwner Id: {OwnerId}\nMembers: {string.Join(",", Members)}";
     }
 }

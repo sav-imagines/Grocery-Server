@@ -1,4 +1,5 @@
-﻿using Grocery_Server.Controllers.GroceryListController;
+﻿using System.Text.Json;
+using Grocery_Server.Controllers.GroceryListController;
 using Grocery_Server.Models;
 using Grocery_Server.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -8,7 +9,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using System.Text.Json;
 
 namespace Grocery_Server.Controllers.RecipeController;
 
@@ -23,7 +23,11 @@ public class RecipeController : ControllerBase
     private readonly UserManager<User> _userManager;
     private readonly ImageStorageService _imageStorageService;
 
-    public RecipeController([FromServices] GroceryDbContext dbContext, UserManager<User> userManager, ImageStorageService imageStorageService)
+    public RecipeController(
+        [FromServices] GroceryDbContext dbContext,
+        UserManager<User> userManager,
+        ImageStorageService imageStorageService
+    )
     {
         _dbContext = dbContext;
         _userManager = userManager;
@@ -36,12 +40,20 @@ public class RecipeController : ControllerBase
         List<CreateListItemDTO> items;
         try
         {
-            List<CreateListItemDTO>? maybeItems = JsonSerializer.Deserialize<List<CreateListItemDTO>>(recipe.Items);
+            List<CreateListItemDTO>? maybeItems = JsonSerializer.Deserialize<
+                List<CreateListItemDTO>
+            >(recipe.Items);
             if (maybeItems == null || maybeItems.IsNullOrEmpty())
                 return BadRequest("Recipes should contain items");
-            else if (maybeItems.Any(item => item.ItemId.ToByteArray().Equals(new Guid("{00000000-0000-0000-0000-000000000000}"))))
+            else if (
+                maybeItems.Any(item =>
+                    item.ItemId.ToByteArray()
+                        .Equals(new Guid("{00000000-0000-0000-0000-000000000000}"))
+                )
+            )
                 return BadRequest("Malformed items JSON");
-            else items = maybeItems;
+            else
+                items = maybeItems;
         }
         catch
         {
@@ -56,7 +68,11 @@ public class RecipeController : ControllerBase
         if (user.Group?.Recipes.Any(r => r.Name == recipe.Name) ?? true)
             return BadRequest("Your group already contains a recipe with that name");
 
-        List<RecipeItem> recipeItems = items.Select(ri => new RecipeItem(recipeId, ri.ItemId, ri.Quantity)).ToList();
+        IEnumerable<RecipeItem> recipeItems = items.Select(ri => new RecipeItem(
+            recipeId,
+            ri.ItemId,
+            ri.Quantity
+        ));
         foreach (RecipeItem item in recipeItems)
         {
             if (!_dbContext.GroceryItems.Any(gi => gi.Id == item.ItemId))
@@ -88,18 +104,22 @@ public class RecipeController : ControllerBase
     {
         User user = await GetUser();
         Group group = user.Group ?? throw new Exception();
-        IEnumerable<Recipe> recipes = query?.IsNullOrEmpty() ?? true
-            ? group.Recipes
-            : group.Recipes
-            .Where(r => EF.Functions.ILike(r.Name, $"%{query}%") || EF.Functions.ILike(r.Description, $"%{query}%"));
+        IEnumerable<Recipe> recipes =
+            query?.IsNullOrEmpty() ?? true
+                ? group.Recipes
+                : group.Recipes.Where(r =>
+                    EF.Functions.ILike(r.Name, $"%{query}%")
+                    || EF.Functions.ILike(r.Description, $"%{query}%")
+                );
         return Ok(recipes.Select(r => new RecipeInfoDTO(r)));
     }
-
 
     [HttpGet("picture/{fileName}")]
     public ActionResult<IFormFile> GetPicture(string fileName)
     {
-        RecipePicture? pfp = _dbContext.RecipePictures.FirstOrDefault(pfp => pfp.FileName == fileName);
+        RecipePicture? pfp = _dbContext.RecipePictures.FirstOrDefault(pfp =>
+            pfp.FileName == fileName
+        );
         if (pfp == null)
             return NotFound("No such profile picture is known");
         else
@@ -108,7 +128,6 @@ public class RecipeController : ControllerBase
             {
                 FileStream image = _imageStorageService.GetImage(pfp.FileName);
                 return Ok(image);
-
             }
             catch (FileNotFoundException)
             {
@@ -121,13 +140,21 @@ public class RecipeController : ControllerBase
     public async Task<IActionResult> GetIngredients(Guid id)
     {
         User user = await GetUser();
-        Recipe? recipe = await _dbContext.Recipes
-          .Include(recipe => recipe.RecipeItems)
-          .ThenInclude(recipeItem => recipeItem.Item)
-          .FirstOrDefaultAsync(recipe => recipe.GroupId == user.GroupId && recipe.Id == id);
+        Recipe? recipe = await _dbContext
+            .Recipes.Include(recipe => recipe.RecipeItems)
+                .ThenInclude(recipeItem => recipeItem.Item)
+            .FirstOrDefaultAsync(recipe => recipe.GroupId == user.GroupId && recipe.Id == id);
         if (recipe == null)
-          return NotFound();
-        return Ok(recipe.RecipeItems.Select(item => new ListItemDisplayDTO(item.ItemId, item.Item.ItemName ?? "", item.Quantity, item.Item.CategoryId, item.Item.Category.CategoryName)));
+            return NotFound();
+        return Ok(
+            recipe.RecipeItems.Select(item => new ListItemDisplayDTO(
+                item.ItemId,
+                item.Item.ItemName ?? "",
+                item.Quantity,
+                item.Item.CategoryId,
+                item.Item.Category.CategoryName
+            ))
+        );
     }
 
     [NonAction]

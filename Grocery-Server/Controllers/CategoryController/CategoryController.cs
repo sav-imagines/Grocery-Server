@@ -30,9 +30,9 @@ public class CategoryController : ControllerBase
             (await GetCurrentUser()).Group
             ?? throw new ArgumentException("how??? attribute not working wth");
 
-        List<CategoryDisplayDTO> categories = group
-            .CustomCategories.Select(cat => new CategoryDisplayDTO(cat))
-            .ToList();
+        IEnumerable<CategoryDisplayDTO> categories = group.CustomCategories.Select(
+            cat => new CategoryDisplayDTO(cat)
+        );
         return Ok(categories);
     }
 
@@ -56,9 +56,7 @@ public class CategoryController : ControllerBase
         User user = await GetCurrentUser();
         Group group = GetGroup(user);
 
-        GroceryCategory? foundCategory = group.CustomCategories.FirstOrDefault(cat =>
-            cat.Id == id
-        );
+        GroceryCategory? foundCategory = group.CustomCategories.FirstOrDefault(cat => cat.Id == id);
         if (foundCategory == null)
             return NotFound();
         _dbContext.Remove(foundCategory);

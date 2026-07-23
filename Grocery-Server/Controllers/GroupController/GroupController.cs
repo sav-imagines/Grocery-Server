@@ -19,7 +19,12 @@ public class GroupController : ControllerBase
     private readonly GroceryDbContext _dbContext;
     private readonly UserManager<User> _userManager;
     private readonly ImageStorageService _imageStorageService;
-    public GroupController(GroceryDbContext dbContext, UserManager<User> userManager, ImageStorageService imageStorageService)
+
+    public GroupController(
+        GroceryDbContext dbContext,
+        UserManager<User> userManager,
+        ImageStorageService imageStorageService
+    )
     {
         _dbContext = dbContext;
         _userManager = userManager;
@@ -36,7 +41,8 @@ public class GroupController : ControllerBase
         User? user = await GetCurrentUser();
         if (user == null)
             return Unauthorized();
-        return user.Group == null ? NotFound("You're not in a group")
+        return user.Group == null
+            ? NotFound("You're not in a group")
             : Ok(new GroupDisplayDTO(user.Group, _imageStorageService));
     }
 
@@ -88,8 +94,10 @@ public class GroupController : ControllerBase
         if (addressee.GroupId != null)
             return BadRequest($"Already a member of group {addressee.Group!.Name}");
 
-        GroupInvite? existingInvite = await _dbContext.GroupInvites.FirstOrDefaultAsync(existingInvite =>
-            existingInvite.GroupId == groupId && existingInvite.UserId == invitedId);
+        GroupInvite? existingInvite = await _dbContext.GroupInvites.FirstOrDefaultAsync(
+            existingInvite =>
+                existingInvite.GroupId == groupId && existingInvite.UserId == invitedId
+        );
         if (existingInvite != null)
         {
             if (!existingInvite.IsExpired()) // if a valid invite still exists, return conflict
@@ -116,7 +124,8 @@ public class GroupController : ControllerBase
             return Unauthorized();
 
         GroupInvite? existingInvite = await _dbContext.GroupInvites.FirstOrDefaultAsync(oldInvite =>
-            oldInvite.UserId == invitedId && oldInvite.GroupId == user.GroupId);
+            oldInvite.UserId == invitedId && oldInvite.GroupId == user.GroupId
+        );
         if (existingInvite == null)
             return NotFound();
 
@@ -136,8 +145,9 @@ public class GroupController : ControllerBase
         if (user == null)
             return Unauthorized();
 
-        List<InviteDisplayDTO> invites = user
-            .Invites.Select(invite => new InviteDisplayDTO(invite)).ToList();
+        IEnumerable<InviteDisplayDTO> invites = user.Invites.Select(invite => new InviteDisplayDTO(
+            invite
+        ));
         return Ok(invites);
     }
 
@@ -150,9 +160,9 @@ public class GroupController : ControllerBase
         if (user.Group == null)
             return NotFound();
 
-        List<InviteDisplayDTO> invites = user.Group.Invites
-            .Select(invite => new InviteDisplayDTO(invite))
-            .ToList();
+        IEnumerable<InviteDisplayDTO> invites = user.Group.Invites.Select(
+            invite => new InviteDisplayDTO(invite)
+        );
         return Ok(invites);
     }
 
@@ -168,10 +178,11 @@ public class GroupController : ControllerBase
         if (user.Group != null)
             return BadRequest("Cannot join a group while part of another");
 
-        GroupInvite? foundInvite = await _dbContext.GroupInvites
-            .Include(i => i.Group)
+        GroupInvite? foundInvite = await _dbContext
+            .GroupInvites.Include(i => i.Group)
             .FirstOrDefaultAsync(foundInvite =>
-                foundInvite.UserId == invite.UserId && foundInvite.GroupId == invite.GroupId);
+                foundInvite.UserId == invite.UserId && foundInvite.GroupId == invite.GroupId
+            );
         if (foundInvite == null)
             return NotFound();
 
@@ -196,7 +207,8 @@ public class GroupController : ControllerBase
             return Unauthorized();
 
         GroupInvite? foundInvite = await _dbContext.GroupInvites.FirstOrDefaultAsync(foundInvite =>
-            foundInvite.UserId == invite.UserId && foundInvite.GroupId == invite.GroupId);
+            foundInvite.UserId == invite.UserId && foundInvite.GroupId == invite.GroupId
+        );
         if (foundInvite == null)
             return NotFound();
 

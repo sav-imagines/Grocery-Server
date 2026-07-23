@@ -29,13 +29,11 @@ public class GroceryListController : ControllerBase
     {
         User user = await GetCurrentUser();
 
-        Models.GroceryList? list = user.Group?.GroceryLists?.FirstOrDefault(list =>
-            list.Id == id
-        );
+        Models.GroceryList? list = user.Group?.GroceryLists?.FirstOrDefault(list => list.Id == id);
 
         if (list == null || user.GroupId != list.GroupId)
             return NotFound();
-        List<GroceryListItem> items = list.GroceryListItems?.ToList() ?? [];
+        IEnumerable<GroceryListItem> items = list.GroceryListItems ?? [];
         return Ok(
             list.GroceryListItems?.Select(item => new ListItemDisplayDTO(
                 item.ItemId,
@@ -59,8 +57,7 @@ public class GroceryListController : ControllerBase
         if (
             !itemsList.All(item =>
                 _dbContext.GroceryItems.Any(existingItem =>
-                    existingItem.Id == item.ItemId
-                    && existingItem.Category.GroupId == user.GroupId
+                    existingItem.Id == item.ItemId && existingItem.Category.GroupId == user.GroupId
                 )
             )
         )
@@ -156,8 +153,7 @@ public class GroceryListController : ControllerBase
 
     private async Task<User> GetCurrentUser()
     {
-        return await _userManager.GetUserAsync(User)
-            ?? throw new Exception("Should be impossible");
+        return await _userManager.GetUserAsync(User) ?? throw new Exception("Should be impossible");
     }
 
     private Group GetGroup(User user)

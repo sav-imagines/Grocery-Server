@@ -1,5 +1,3 @@
-using Grocery_Server.Controllers.GroceryListController;
-using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics.CodeAnalysis;
 
 namespace Grocery_Server.Models;

@@ -1,4 +1,5 @@
 ﻿//using Grocery_Server.ControllerModels;
+using System;
 using Grocery_Server.Controllers.Category;
 using Grocery_Server.Models;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -8,7 +9,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using System;
 
 namespace Grocery_Server.Controllers.ItemController;
 
@@ -60,9 +60,7 @@ public class ItemController : ControllerBase
         User user = await GetCurrentUser();
         Group group = user.Group ?? throw new Exception("Should be included already");
 
-        return Ok(
-            group.CustomCategories.Select(category => new CategoryListDTO(category))
-        );
+        return Ok(group.CustomCategories.Select(category => new CategoryListDTO(category)));
     }
 
     [HttpGet("by-id")]
@@ -114,9 +112,7 @@ public class ItemController : ControllerBase
         User user = await GetCurrentUser();
         Group group = user.Group ?? throw new Exception("Should be included already");
 
-        GroceryItem? existingItem = _dbContext.GroceryItems.FirstOrDefault(item =>
-            item.Id == id
-        );
+        GroceryItem? existingItem = _dbContext.GroceryItems.FirstOrDefault(item => item.Id == id);
         if (existingItem == null || existingItem.Category.GroupId != group.Id)
             return NotFound();
         _dbContext.GroceryItems.Remove(existingItem);
@@ -129,20 +125,18 @@ public class ItemController : ControllerBase
     {
         User user = await GetCurrentUser();
 
-        List<ItemDetailDisplayDTO> items = await
-        _dbContext.GroceryItems
-        .Where(item => EF.Functions.ILike(item.ItemName, $"%{query}%"))
-        .Where(item => item.Category.GroupId == user.GroupId)
-        .Include(item => item.Category)
-        .Select(item => new ItemDetailDisplayDTO(item))
-        .ToListAsync();
+        IEnumerable<ItemDetailDisplayDTO> items = _dbContext
+            .GroceryItems.Where(item => EF.Functions.ILike(item.ItemName, $"%{query}%"))
+            .Where(item => item.Category.GroupId == user.GroupId)
+            .Include(item => item.Category)
+            .Select(item => new ItemDetailDisplayDTO(item));
         return Ok(items);
     }
 
     private async Task<User> GetCurrentUser()
     {
-        User? user = await _userManager.GetUserAsync(User)
-            ?? throw new Exception("Should be impossible");
+        User? user =
+            await _userManager.GetUserAsync(User) ?? throw new Exception("Should be impossible");
         await _dbContext.Entry(user).Reference(u => u.Group).LoadAsync();
         return user;
     }
