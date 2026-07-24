@@ -1,17 +1,7 @@
 namespace Grocery_Server.Controllers.Category;
 
-public record CategoryDisplayDTO
+public record CategoryDisplayDTO(Guid Id, string Name)
 {
-    public Guid Id { get; set; }
-    public string Name { get; set; }
-
     public CategoryDisplayDTO(Models.GroceryCategory category)
-    {
-        Id = category.Id;
-        Name = category.CategoryName;
-    }
-
-#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
-    public CategoryDisplayDTO() { }
-#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
+        : this(category.Id, category.CategoryName) { }
 }

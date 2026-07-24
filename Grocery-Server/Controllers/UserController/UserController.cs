@@ -98,17 +98,15 @@ public class UserController : ControllerBase
         );
         if (pfp == null)
             return NotFound("No such profile picture is known");
-        else
+
+        try
         {
-            try
-            {
-                FileStream image = _imageStorageService.GetImage(pfp.FileName);
-                return Ok(image);
-            }
-            catch (FileNotFoundException)
-            {
-                return NotFound("Error loading from storage");
-            }
+            FileStream image = _imageStorageService.GetImage(pfp.FileName);
+            return Ok(image);
+        }
+        catch (FileNotFoundException)
+        {
+            return NotFound("Error loading from storage");
         }
     }
 

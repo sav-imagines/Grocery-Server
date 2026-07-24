@@ -2,16 +2,8 @@
 
 namespace Grocery_Server.Controllers.GroceryListController;
 
-public class GroceryListDisplayDTO
+public record GroceryListDisplayDTO(Guid ListId, DateTime CreatedTime, int ItemsCount)
 {
-    public Guid ListId { get; set; }
-    public DateTime CreatedTime { get; set; }
-    public int ItemsCount { get; set; }
-
     public GroceryListDisplayDTO(GroceryList list)
-    {
-        ListId = list.Id;
-        CreatedTime = list.CreationTime;
-        ItemsCount = list.GroceryListItems?.Count ?? 0;
-    }
+        : this(list.Id, list.CreationTime, list.GroceryListItems?.Count ?? 0) { }
 }

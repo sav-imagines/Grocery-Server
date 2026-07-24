@@ -2,22 +2,8 @@
 
 namespace Grocery_Server.Controllers.RequestController;
 
-public record RequestListItemDTO
+public record RequestListItemDTO(Guid ItemId, ushort Quantity)
 {
-    public Guid ItemId { get; set; }
-    public ushort Quantity { get; set; }
-
-    public RequestListItemDTO(Guid itemId, ushort quantity)
-    {
-        this.ItemId = itemId;
-        this.Quantity = quantity;
-    }
-    
     public RequestListItemDTO(RequestListItem item)
-    {
-        ItemId = item.ItemId;
-        Quantity = item.Quantity;
-    }
-
-    public RequestListItemDTO() { }
+        : this(item.ItemId, item.Quantity) { }
 }

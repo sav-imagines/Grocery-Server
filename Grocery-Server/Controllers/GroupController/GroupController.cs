@@ -1,5 +1,4 @@
-﻿//using Grocery_Server.ControllerModels;
-using Grocery_Server.Models;
+﻿using Grocery_Server.Models;
 using Grocery_Server.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
@@ -43,7 +42,7 @@ public class GroupController : ControllerBase
             return Unauthorized();
         return user.Group == null
             ? NotFound("You're not in a group")
-            : Ok(new GroupDisplayDTO(user.Group, _imageStorageService));
+            : Ok(new GroupDisplayDTO(user.Group));
     }
 
     [EnableRateLimiting(nameof(RateLimiters.Slow))]

@@ -35,7 +35,7 @@ public class RecipeController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<IActionResult> CreateRecipe([FromForm] NewRecipeDTO recipe)
+    public async Task<ActionResult> CreateRecipe([FromForm] NewRecipeDTO recipe)
     {
         List<CreateListItemDTO> items;
         try

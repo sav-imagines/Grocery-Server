@@ -1,13 +1,7 @@
 namespace Grocery_Server.Controllers.ItemController;
 
-public class ItemDisplayDTO
+public record ItemDisplayDTO(Guid Id, string Name)
 {
-    public Guid Id { get; set; }
-    public string Name { get; set; }
-
     public ItemDisplayDTO(Models.GroceryItem item)
-    {
-        Id = item.Id;
-        Name = item.ItemName;
-    }
+        : this(item.Id, item.ItemName) { }
 }
